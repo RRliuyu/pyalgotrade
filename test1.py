@@ -5,6 +5,10 @@ class B(A):
     def test(self):
         print("B.test")
         super().test()
+class C(B):
+    def test(self):
+        print("C.test")
+        super().test()
 
-a=B()
+a=C()
 a.test()
