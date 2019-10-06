@@ -9,6 +9,8 @@ from pyalgotrade import plotter
 import os
 import pandas as pd
 import time
+#记录开始时间
+start =time.perf_counter()
 
 now=int(time.time())
 timeStruct=time.localtime(now)
@@ -106,7 +108,8 @@ class MyStrategy(strategy.BacktestingStrategy):
         elif bar.getPrice() < self.__pricesma[-1] and not self.__position.exitActive():
             self.__position.exitMarket()
 
-#---------------------------------------------------------------------------------------------
+#--------------------------------------------------------------------
+# -------------------------
 
 
 
@@ -158,3 +161,8 @@ def run_strategy(smaPeriod):
 # i=[240,244,248,252,256,260,264,268,272,276,280,284,288,292,294,298,302]
 # for x in i :
 run_strategy(18)
+
+#记录结束时间
+end = time.perf_counter()
+#打印运行时间
+print('Running time: %s Seconds'%(end-start))
