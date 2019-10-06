@@ -1,6 +1,7 @@
 from pyalgotrade import strategy
 from pyalgotrade.barfeed import yahoofeed
 from pyalgotrade.technical import ma
+from pyalgotrade.technical import macd
 from pyalgotrade import plotter
 from pyalgotrade.stratanalyzer import returns, sharpe, drawdown, trades
 from pyalgotrade import sma_crossover
@@ -13,6 +14,7 @@ class MyStrategy(strategy.BacktestingStrategy):
         # We'll use adjusted close values instead of regular close values.
         self.setUseAdjustedValues(True)
         self.__sma = ma.SMA(feed[instrument].getPriceDataSeries(), smaPeriod)
+        self.__macd=macd.MACD(feed[instrument].getPriceDataSeries(),5,10,8)
 
     def onEnterOk(self, position):
         execInfo = position.getEntryOrder().getExecutionInfo()
@@ -52,8 +54,10 @@ def run_strategy(smaPeriod):
     feed.addBarsFromCSV("zggf", "E:/PythonData/CSV/000938.csv")
     myStrategy = MyStrategy(feed, "zggf", smaPeriod)
     myStrategy2 = sma_crossover.SMACrossOver(feed, "zggf", smaPeriod)
+    myStrategy3 = macd.(feed,"zggf",5,8,9)
     plt = plotter.StrategyPlotter(myStrategy)
     plt.getInstrumentSubplot("zggf").addDataSeries("SMA", myStrategy2.getSMA())
+    plt.getInstrumentSubplot("zggf").addDataSeries("SMA", myStrategy3.getSignal())
     sharpe_ratio = sharpe.SharpeRatio()
     trade_situation = trades.Trades()
     myStrategy.attachAnalyzer(sharpe_ratio)

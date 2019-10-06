@@ -1,9 +1,9 @@
 from pyalgotrade import strategy
 from pyalgotrade.barfeed import yahoofeed
 from pyalgotrade.technical import ma
-from pyalgotrade import plotter
 from pyalgotrade.stratanalyzer import returns, sharpe, drawdown, trades
-from pyalgotrade import sma_crossover
+
+
 
 class MyStrategy(strategy.BacktestingStrategy):
     def __init__(self, feed, instrument, smaPeriod):
@@ -13,6 +13,9 @@ class MyStrategy(strategy.BacktestingStrategy):
         # We'll use adjusted close values instead of regular close values.
         self.setUseAdjustedValues(True)
         self.__sma = ma.SMA(feed[instrument].getPriceDataSeries(), smaPeriod)
+
+    def getSMA(self):
+        return self.__sma
 
     def onEnterOk(self, position):
         execInfo = position.getEntryOrder().getExecutionInfo()
@@ -46,23 +49,36 @@ class MyStrategy(strategy.BacktestingStrategy):
             self.__position.exitMarket()
 
 def run_strategy(smaPeriod):
-    # Evaluate the strategy with the feed.
     # Load the yahoo feed from the CSV file
     feed = yahoofeed.Feed()
     feed.addBarsFromCSV("zggf", "E:/PythonData/CSV/000938.csv")
-    myStrategy = MyStrategy(feed, "zggf", smaPeriod)
-    myStrategy2 = sma_crossover.SMACrossOver(feed, "zggf", smaPeriod)
-    plt = plotter.StrategyPlotter(myStrategy)
-    plt.getInstrumentSubplot("zggf").addDataSeries("SMA", myStrategy2.getSMA())
-    sharpe_ratio = sharpe.SharpeRatio()
-    trade_situation = trades.Trades()
-    myStrategy.attachAnalyzer(sharpe_ratio)
-    myStrategy.attachAnalyzer(trade_situation)
-    myStrategy.run()
-    print("Final portfolio value: $%.2f" % myStrategy.getBroker().getEquity())
-    print("sharpe_ratio", sharpe_ratio.getSharpeRatio(0))
-    print("total number of trades", trade_situation.getCount())
-    print("Profit times number of trades ", trade_situation.getProfitableCount())
-    plt.plot()
 
-run_strategy(20)
+    # Evaluate the strategy with the feed.
+    myStrategy = MyStrategy(feed, "zggf", smaPeriod)
+    returnsAnalyzer=returns.Returns()
+    myStrategy.attachAnalyzer(returnsAnalyzer)
+    sharpeRatioAnalyzer = sharpe.SharpeRatio()
+    myStrategy.attachAnalyzer(sharpeRatioAnalyzer)
+    drawDownAnalyzer = drawdown.DrawDown()
+    myStrategy.attachAnalyzer(drawDownAnalyzer)
+    tradesAnalyzer = trades.Trades()
+    myStrategy.attachAnalyzer(tradesAnalyzer)
+    myStrategy.run()
+    print(myStrategy.getResult())
+    print("Final portfolio value: $%.2f" % myStrategy.getResult())
+    print("Cumulative returns: %.2f %%" % (returnsAnalyzer.getCumulativeReturns()[-1] * 100))
+    print(returnsAnalyzer.getCumulativeReturns())
+    print("Sharpe ratio: %.2f" % (sharpeRatioAnalyzer.getSharpeRatio(0.05)))
+    print("Max. drawdown: %.2f %%" % (drawDownAnalyzer.getMaxDrawDown() * 100))
+    print("Longest drawdown duration: %s" % (drawDownAnalyzer.getLongestDrawDownDuration()))
+
+    print()
+    print("Total trades: %d" % (tradesAnalyzer.getCount()))
+    
+
+
+
+
+run_strategy(5)
+
+
