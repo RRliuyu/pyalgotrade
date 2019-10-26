@@ -9,6 +9,7 @@ strTime1=time.strftime("%Y-%m-%d",timeStruct)
 strTime2=time.strftime("%Y-%m-%d",timeStruct)+" 00:00:00"
 
 os.mkdir("E:/Stock/Data_Day_original/" + strTime1)
+os.mkdir("E:/Stock/Tushare_day/" + strTime1)
 
 #设置下载秘钥
 pro = ts.pro_api('5f37df276dab4fff9a3783499fd18174ec34caf4a84dc1e953c7d987')
@@ -22,17 +23,23 @@ pd.set_option('display.max_rows', None)
 
 for i in range(df1.ts_code.shape[0]):
     #下载数据
-    # df = pro.daily(ts_code=df1.ts_code[i], start_date='20000101', end_date='20190718')
+    # df = pro.daily(ts_code=df1.ts_code[i], start_date='20000101', end_date=
+
+    # df2 = ts.pro_bar(ts_code=df1.iloc[i, 1], adj='qfq', retry_count=20,start_date='20180101', end_date='20181231')
+
     df2 = ts.pro_bar(ts_code=df1.iloc[i,1], adj='qfq',retry_count=20)
+
     #将成交量由1手改为100股
     df2.vol = df2.vol * 100
     #将成交额由千元改为元
     df2.amount = df2.amount * 1000
+
+
     # 数据存盘
     print(df1.iloc[i,1])
-    df2.to_csv('E:/Stock/Tushare_day/'+df1.iloc[i,1]+".csv")
+    df2.to_csv('E:/Stock/Tushare_day/'+ strTime1 +"/"+df1.iloc[i,1]+".csv")
     # 读出数据，DataFrame格式
-    df2 = pd.read_csv('E:/Stock/Tushare_day/'+df1.iloc[i,1]+".csv")
+    df2 = pd.read_csv('E:/Stock/Tushare_day/'+ strTime1 +"/"+df1.iloc[i,1]+".csv")
     # 从df中选取数据段，改变段名；新段'Adj Close'使用原有段'close'的数据
     df3 = pd.DataFrame({'Date Time' : df2['trade_date'], 'Open' : df2['open'],
                         'High' : df2['high'],'Close' : df2['close'],

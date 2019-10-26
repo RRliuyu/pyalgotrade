@@ -112,7 +112,6 @@ class MyStrategy(strategy.BacktestingStrategy):
 # -------------------------
 
 
-
 def run_strategy(smaPeriod):
     global files,x,f,df_trade
 
